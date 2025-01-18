@@ -1,19 +1,43 @@
 /* @provengo summon selenium */
 
+const SESSIONS = {
+  teacher: {name: 'teacher', username: 'teacher', password: 'sandbox24'},
+  student: {name: 'student', username: 'student', password: 'sandbox24'}
+}
+
+
 /**
- * This story opens a new browser window, goes to google.com, and searches for "Pizza".
+ * The method:
+ * 1. Opens a new browser session
+ * 2. Goes to: https://sandbox.moodledemo.net/login/index.php
+ * 3. Logs in with student credentials
+ * 4. Navigates to the course page
+ * 5. Navigates to the quiz page
+ * 6. Starts the quiz and fills 2 answers
  */
-bthread('Search', function () {
-  let s = new SeleniumSession('search').start(URL)
-  composeQuery(s, { text: 'Pizza' })
-  startSearch(s)
+bthread('student mark 2 choices', function () {
+  let s = new SeleniumSession(SESSIONS.student.name).start(URL)
+  login(s, {'username': SESSIONS.student.username, 'password': SESSIONS.student.password})
+  get_course(s)
+  get_quiz_attempt(s)
+  fill_answers(s)
 })
 
 /**
- * This story opens a new browser window, goes to google.com, and searches for "Pasta" using the "I Feel Lucky" feature.
+ * The method:
+ * 1. Opens a new browser session
+ * 2. Goes to: https://sandbox.moodledemo.net/login/index.php
+ * 3. Logs in with teacher credentials
+ * 4. Navigates to the course page
+ * 5. Navigates to the quiz page
+ * 6. Changes the quiz to single choice
+ * 7. Saves the changes
  */
-bthread('Feeling lucky', function () {
-  let s = new SeleniumSession('lucky').start(URL)
-  composeQuery(s, { text: 'Pasta' })
-  feelLucky(s)
+bthread('teacher change quiz to single choice', function () {
+  let s = new SeleniumSession(SESSIONS.teacher.name).start(URL)
+  login(s, {'username': SESSIONS.teacher.username, 'password': SESSIONS.teacher.password})
+  get_course(s)
+  goto_edit_quiz(s)
+  edit_quiz(s)
 })
+
