@@ -38,6 +38,7 @@ function fill_answers(session) {
 function goto_edit_quiz(session) {
   sync({ request: Event('start_goto_edit_quiz', {'session': {'name': session.name}}) });
   with(session) {
+    click(xpaths.course_page.quiz);
     click(xpaths.quiz_start_page.questions);
     click(xpaths.quiz_edit_page.start_edit_quiz);
   }
