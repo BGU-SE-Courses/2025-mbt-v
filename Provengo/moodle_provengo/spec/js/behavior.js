@@ -92,51 +92,45 @@ studentActionsWithSession.forEach(action => actionMarker(action[0], action[1]))
 teacherActionsWithSession.forEach(action => actionMarker(action[0], action[1]))
 
 
-function isValidSequence(sequence) {
-  let editQuizIndex = sequence.findIndex(
-      ([action, session]) => (action === 'edit_quiz' && session === SESSIONS.teacher)
-  );
-  let getToQuizAttemptIndex = sequence.findIndex(
-      ([action, session]) => (action === 'go_to_quiz_attempt' && session === SESSIONS.student)
-  );
-
-  // If either action is missing or constraint is violated, the sequence is invalid
-  if (
-      editQuizIndex === -1 ||
-      getToQuizAttemptIndex === -1 ||
-      editQuizIndex >= getToQuizAttemptIndex
-  ) {
-    return false;
+function calc_all_possible_pairs() {
+  let pairs = []
+  for (let i = 0; i < 8; i++) {
+    for (let j = i+1; j < 8; j++) {
+      pairs.push([i, j])
+    }
   }
-  return true;
+  return pairs
 }
 
-// generates all possible sequences of actions
-function generateAllValidSequences() {
-  const allActions = studentActionsWithSession.concat(teacherActionsWithSession);
+all_possible_pairs = calc_all_possible_pairs();
 
-  function permute(arr) {
-    if (arr.length === 0) return [[]];
-    return arr.flatMap((item, i) =>
-        permute([...arr.slice(0, i), ...arr.slice(i + 1)]).map((p) => [item, ...p])
-    );
-  }
 
-  return permute(allActions).filter(isValidSequence);
+function processPairwiseActions(sessionA, actionType1, sessionB, actionType2) {
+  all_possible_pairs.forEach(([index1, index2]) => {
+    bthread(`current order ${actionType1} and ${actionType2}`, function () {
+      sync({ waitFor: Ctrl.markEvent(`${actionType1}In${sessionA.name}At${index1}`) });
+      sync({ waitFor: Ctrl.markEvent(`${actionType2}In${sessionB.name}At${index2}`) });
+      
+      if (index1 < index2) {
+        sync({ request: Ctrl.markEvent(`${actionType1}In${sessionA.name}And${actionType2}In${sessionB.name}`) });
+      }
+      else {
+        sync({ request: Ctrl.markEvent(`${actionType2}In${sessionB.name}And${actionType1}In${sessionA.name}`) });
+      }
+    });
+  });
 }
 
-// creates a bthread that marks a specific sequence of actions
-function pairwise(sequence, sequenceIndex) {
-  bthread(`pairwise sequence ${sequenceIndex}`, function () {
-    sequence.forEach((action, index) => {
-        let actionName = action[0];
-        let session = action[1];
-        sync({waitFor: Event(`Action:${actionName}Session:${session.name}Index:${index}`)})
-        sync({request: Ctrl.markEvent(`sequence:${sequenceIndex}`)})
-    })
+studentActionsWithSession.forEach(studentAction => {
+  teacherActionsWithSession.forEach(teacherAction => {
+    processPairwiseActions(studentAction[1], studentAction[0], teacherAction[1], teacherAction[0])
   })
-}
+})
 
-let sequences = generateAllValidSequences();
+// opposite order:
 
-sequences.forEach((sequence, index) => pairwise(sequence, index))
+teacherActionsWithSession.forEach(teacherAction => {
+  studentActionsWithSession.forEach(studentAction => {
+    processPairwiseActions(teacherAction[1], teacherAction[0], studentAction[1], studentAction[0])
+  })
+})

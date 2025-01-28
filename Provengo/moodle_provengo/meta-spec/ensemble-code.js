@@ -3,12 +3,12 @@
 
 let myGoals = []
 
-function addGoal(sequence, sequenceIndex) {
-    myGoals.push(Ctrl.markEvent(`sequence:${sequenceIndex}`))
-}
-
-sequences.forEach((sequence, index) => addGoal(sequence, index))
-
+studentActionsWithSession.forEach(studentAction => {
+    teacherActionsWithSession.forEach(teacherAction => {
+      myGoals.push([Ctrl.markEvent(`${studentAction[0]}In${studentAction[1].name}And${teacherAction[0]}In${teacherAction[1].name}`)])
+      myGoals.push([Ctrl.markEvent(`${teacherAction[0]}In${teacherAction[1].name}And${studentAction[0]}In${studentAction[1].name}`)])
+    })
+  })
 // from here below is code written defaultly by Provengo, i only changed the definition of GOALS
 
 /**
