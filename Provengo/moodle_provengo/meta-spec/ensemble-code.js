@@ -1,5 +1,6 @@
 // @provengo summon ctrl
 
+
 let myGoals = []
 
 function addGoal(sequence, sequenceIndex) {
