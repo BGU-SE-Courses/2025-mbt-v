@@ -1,4 +1,5 @@
 /* @provengo summon selenium */
+/* @provengo summon ctrl */
 
 const SESSIONS = {
   teacher: {name: 'teacher', username: 'teacher', password: 'sandbox24'},
@@ -54,3 +55,88 @@ bthread("teacher edits quiz before student fills 2 answers", function () {
     block: Event("start_go_to_quiz_attempt", {session: {name: SESSIONS.student.name}})
   })
 })
+
+
+// this function creates a bthread that marks the index of the action in the session (its order of occurrence)
+function actionMarker(action, session) {
+  bthread(`mark ${action} action`, function () {
+    const endEvents = [
+        Event(`end_login`, {'session': {'name': SESSIONS.student.name}, 'data': {'username': SESSIONS.student.username, 'password': SESSIONS.student.password}}),
+        Event(`end_get_courses`, {'session': {'name': SESSIONS.student.name}}),
+        Event(`end_go_to_quiz_attempt`, {'session': {'name': SESSIONS.student.name}}),
+        Event(`end_fill_answers`, {'session': {'name': SESSIONS.student.name}}),
+        Event('end_login', {'session': {'name': SESSIONS.teacher.name}, 'data': {'username': SESSIONS.teacher.username, 'password': SESSIONS.teacher.password}}),
+        Event('end_get_courses', {'session': {'name': SESSIONS.teacher.name}}),
+        Event('end_goto_edit_quiz', {'session': {'name': SESSIONS.teacher.name}}),
+        Event('end_edit_quiz', {'session': {'name': SESSIONS.teacher.name}})
+    ]
+    let signaledEvent = sync({waitFor: endEvents})
+    let i = 0;
+    while (signaledEvent.name !== `end_${action}` || signaledEvent.data.session.name !== session.name) {
+      signaledEvent = sync({waitFor: endEvents})
+      i++
+    }
+
+    sync({request: Ctrl.markEvent(`Action:${action}Session:${session.name}Index:${i}`)})
+  })
+}
+
+let studentActions = ['login', 'get_courses', 'go_to_quiz_attempt', 'fill_answers']
+let teacherActions = ['login', 'get_courses', 'goto_edit_quiz', 'edit_quiz']
+
+let studentActionsWithSession = studentActions.map(action => [action, SESSIONS.student])
+let teacherActionsWithSession = teacherActions.map(action => [action, SESSIONS.teacher])
+
+
+studentActionsWithSession.forEach(action => actionMarker(action[0], action[1]))
+teacherActionsWithSession.forEach(action => actionMarker(action[0], action[1]))
+
+
+function isValidSequence(sequence) {
+  let editQuizIndex = sequence.findIndex(
+      ([action, session]) => (action === 'edit_quiz' && session === SESSIONS.teacher)
+  );
+  let getToQuizAttemptIndex = sequence.findIndex(
+      ([action, session]) => (action === 'go_to_quiz_attempt' && session === SESSIONS.student)
+  );
+
+  // If either action is missing or constraint is violated, the sequence is invalid
+  if (
+      editQuizIndex === -1 ||
+      getToQuizAttemptIndex === -1 ||
+      editQuizIndex >= getToQuizAttemptIndex
+  ) {
+    return false;
+  }
+  return true;
+}
+
+// generates all possible sequences of actions
+function generateAllValidSequences() {
+  const allActions = studentActionsWithSession.concat(teacherActionsWithSession);
+
+  function permute(arr) {
+    if (arr.length === 0) return [[]];
+    return arr.flatMap((item, i) =>
+        permute([...arr.slice(0, i), ...arr.slice(i + 1)]).map((p) => [item, ...p])
+    );
+  }
+
+  return permute(allActions).filter(isValidSequence);
+}
+
+// creates a bthread that marks a specific sequence of actions
+function pairwise(sequence, sequenceIndex) {
+  bthread(`pairwise sequence ${sequenceIndex}`, function () {
+    sequence.forEach((action, index) => {
+        let actionName = action[0];
+        let session = action[1];
+        sync({waitFor: Event(`Action:${actionName}Session:${session.name}Index:${index}`)})
+        sync({request: Ctrl.markEvent(`sequence:${sequenceIndex}`)})
+    })
+  })
+}
+
+let sequences = generateAllValidSequences();
+
+sequences.forEach((sequence, index) => pairwise(sequence, index))

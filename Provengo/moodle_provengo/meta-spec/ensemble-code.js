@@ -1,13 +1,29 @@
 // @provengo summon ctrl
 
+let myGoals = []
+
+function addGoal(sequence, sequenceIndex) {
+    myGoals.push(Ctrl.markEvent(`sequence:${sequenceIndex}`))
+}
+
+sequences.forEach((sequence, index) => addGoal(sequence, index))
+
+// from here below is code written defaultly by Provengo, i only changed the definition of GOALS
+
 /**
  * List of events "of interest" that we want test suites to cover.
  */
+
+/*
 const GOALS = [
     any(/Howdy/),
     any(/Mars/),
     Ctrl.markEvent("Classic!")
-];
+];*/
+
+const GOALS = myGoals
+
+
 
 const makeGoals = function(){
     return [ [ any(/Howdy/), any(/Venus/) ],
