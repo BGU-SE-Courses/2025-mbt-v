@@ -3,6 +3,7 @@
 
 let myGoals = []
 
+
 studentActionsWithSession.forEach(studentAction => {
     teacherActionsWithSession.forEach(teacherAction => {
       myGoals.push([Ctrl.markEvent(`${studentAction[0]}In${studentAction[1].name}And${teacherAction[0]}In${teacherAction[1].name}`)])
@@ -53,7 +54,7 @@ function rankByMetGoals( ensemble ) {
             let event = test[eventIdx];
             for (let ugIdx=unreachedGoals.length-1; ugIdx >=0; ugIdx--) {
                 let unreachedGoal = unreachedGoals[ugIdx];
-                if ( unreachedGoal.contains(event) ) {
+                if ( unreachedGoal.includes(event) ) {
                     unreachedGoals.splice(ugIdx,1);
                 }
             }

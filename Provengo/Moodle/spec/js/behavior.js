@@ -77,7 +77,8 @@ function actionMarker(action, session) {
       i++
     }
 
-    sync({request: Ctrl.markEvent(`Action:${action}Session:${session.name}Index:${i}`)})
+    //sync({request: Ctrl.markEvent(`Action:${action}Session:${session.name}Index:${i}`)})
+    sync({request: Ctrl.markEvent(`Action:${action}Session:${session.name}`)})
   })
 }
 
