@@ -25,7 +25,7 @@ provengo analyze -f PDF Moodle
 provengo run --show-sessions Moodle
 ```
 5. We repeated steps 1-4 until we were satisfied with the result.
-6. We recorded a video of the running tests and added it to the report. Since more than one browser session was opened, we recorded the entire screen. The link for the video is [here]($$*TODO* write the link$$).
+6. We recorded a video of the running tests and added it to the report. Since more than one browser session was opened, we recorded the entire screen. The link for the video is [here](https://github.com/user-attachments/assets/f5f0c07c-c2e9-474d-8b10-e1bc136fa8c7).
 7. We copied the generated graph of the model to a file named [model.pdf](submission-files/model.pdf) inside the submission-files directory.
 
 ### Test files
