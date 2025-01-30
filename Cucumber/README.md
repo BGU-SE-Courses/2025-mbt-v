@@ -1,3 +1,4 @@
+
 # Testing Moodle using Cucumber
 This directory contains the cucumber files for testing the Forum module of the Moodle application.
 
@@ -13,6 +14,16 @@ The step files in the [src/test/java/hellocucumber](src/test/java/hellocucumber)
 
 ## Scenario 1:
 Student fills out a question with multiple choices and chooses two answers
+
+
+
+
+
+
+
+https://github.com/user-attachments/assets/c8801987-ee8a-4a01-94a5-07f228add276
+
+
 
 ## Scenario 2:
 Teacher edits a question to be single choice
